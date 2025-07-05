@@ -7,25 +7,43 @@ exports.handler = async function(event) {
     if (!xdr) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ success: false, error: "Missing signed XDR" })
+        body: JSON.stringify({
+          success: false,
+          error: "Missing signed XDR"
+        })
       };
     }
 
-    // ✅ Use Pi Network's Horizon endpoint
+    // Connect to Pi Mainnet
     const server = new Server("https://api.mainnet.minepi.com");
 
-    // ✅ Use Pi Network passphrase (NOT Stellar PUBLIC)
+    // Load transaction from signed XDR
     const transaction = new Transaction(xdr, "Pi Mainnet");
 
+    // Attempt to submit transaction
     const response = await server.submitTransaction(transaction);
+
+    // ✅ Log transaction success
+    console.log("✅ Transaction successful:");
+    console.log("Hash:", response.hash);
+    console.log("Ledger:", response.ledger);
+    console.log("Envelope XDR:", response.envelope_xdr);
+    console.log("Result XDR:", response.result_xdr);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, result: response })
+      body: JSON.stringify({
+        success: true,
+        result: response
+      })
     };
   } catch (e) {
-    console.error("🔥 submitTransaction error:", e);
-    const reason = e.response?.data?.extras?.result_codes || "Unknown error";
+    // 🔥 Log detailed error information
+    const reason = e?.response?.data?.extras?.result_codes || "Unknown error";
+
+    console.error("🔥 Transaction failed:");
+    console.error("Message:", e.message);
+    console.error("Reason:", reason);
 
     return {
       statusCode: 500,
