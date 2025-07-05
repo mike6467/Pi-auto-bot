@@ -38,19 +38,19 @@ exports.handler = async function(event) {
       })
     };
   } catch (e) {
-    // 🔥 Log detailed error information
     const reason = e?.response?.data?.extras?.result_codes || "Unknown error";
 
+    // 🔥 Log detailed error information
     console.error("🔥 Transaction failed:");
     console.error("Message:", e.message);
-    console.error("Reason:", reason);
+    console.error("Reason:", typeof reason === "object" ? JSON.stringify(reason) : reason);
 
     return {
       statusCode: 500,
       body: JSON.stringify({
         success: false,
         error: e.message,
-        reason
+        reason: typeof reason === "object" ? JSON.stringify(reason) : reason
       })
     };
   }
