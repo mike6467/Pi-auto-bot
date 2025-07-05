@@ -1,6 +1,6 @@
 const { Server, Transaction } = require("stellar-sdk");
 
-exports.handler = async function(event) {
+exports.handler = async function (event) {
   try {
     const { xdr } = JSON.parse(event.body);
 
@@ -14,13 +14,13 @@ exports.handler = async function(event) {
       };
     }
 
-    // Connect to Pi Mainnet
+    // ✅ Connect to Pi Mainnet
     const server = new Server("https://api.mainnet.minepi.com");
 
-    // Load transaction from signed XDR
+    // ✅ Load transaction from signed XDR
     const transaction = new Transaction(xdr, "Pi Mainnet");
 
-    // Attempt to submit transaction
+    // ✅ Attempt to submit transaction
     const response = await server.submitTransaction(transaction);
 
     // ✅ Log transaction success
@@ -39,18 +39,21 @@ exports.handler = async function(event) {
     };
   } catch (e) {
     const reason = e?.response?.data?.extras?.result_codes || "Unknown error";
+    const fullResponse = e?.response?.data || {};
 
-    // 🔥 Log detailed error information
+    // 🔥 Enhanced error logging
     console.error("🔥 Transaction failed:");
     console.error("Message:", e.message);
     console.error("Reason:", typeof reason === "object" ? JSON.stringify(reason) : reason);
+    console.error("Full Horizon response:", JSON.stringify(fullResponse, null, 2));
 
     return {
       statusCode: 500,
       body: JSON.stringify({
         success: false,
         error: e.message,
-        reason: typeof reason === "object" ? JSON.stringify(reason) : reason
+        reason: typeof reason === "object" ? JSON.stringify(reason) : reason,
+        fullResponse
       })
     };
   }
